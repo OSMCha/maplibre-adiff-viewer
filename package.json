@@ -9,7 +9,7 @@
   },
   "files": [
     "dist/*",
-    "index.js"
+    "*.js"
   ],
   "scripts": {
     "build": "rollup index.js --format cjs --file dist/index.cjs",
