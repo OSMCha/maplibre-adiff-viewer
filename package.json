@@ -1,0 +1,46 @@
+{
+  "name": "@osmcha/maplibre-adiff-viewer",
+  "version": "1.0.0",
+  "description": "MapLibre GL JS plugin to visualize OpenStreetMap Augmented Diff files on a map",
+  "type": "module",
+  "exports": {
+    "import": "./index.js",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist/*",
+    "index.js"
+  ],
+  "scripts": {
+    "build": "rollup index.js --format cjs --file dist/index.cjs",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OSMCha/maplibre-adiff-viewer.git"
+  },
+  "keywords": [
+    "openstreetmap",
+    "osm",
+    "changeset",
+    "maplibre"
+  ],
+  "author": "Jake Low <jake@openstreetmap.us>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OSMCha/maplibre-adiff-viewer/issues"
+  },
+  "homepage": "https://github.com/OSMCha/maplibre-adiff-viewer#readme",
+  "dependencies": {
+    "@turf/bbox": "^7.2.0",
+    "deep-equal": "^2.2.3",
+    "id-area-keys": "^6.5.0"
+  },
+  "peerDependencies": {
+    "maplibre-gl": ">4.0.0"
+  },
+  "devDependencies": {
+    "maplibre-gl": "^5.1.0",
+    "rollup": "^4.34.1"
+  }
+}
