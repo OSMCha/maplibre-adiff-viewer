@@ -1,6 +1,6 @@
 {
   "name": "@osmcha/maplibre-adiff-viewer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MapLibre GL JS plugin to visualize OpenStreetMap Augmented Diff files on a map",
   "type": "module",
   "exports": {
