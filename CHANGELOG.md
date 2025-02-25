@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Versioning of this project adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) spec.
 
+## [1.1.0]
+
+Released 2025-02-25
+
+- `onClick(null)` is now called when the user clicks on the map background (deselecting any selected elements), allowing consumers of this package to hide UI elements that may have been shown when a feature was selected.- remove some `console.log()` statements that were added for debugging and accidentally committed
+
 ## [1.0.2]
 
 Released 2025-02-03
@@ -24,6 +30,7 @@ Released 2025-02-03
 
 Initial release.
 
+[1.1.0]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.1.0
 [1.0.2]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.0.2
 [1.0.1]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.0.1
 [1.0.0]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.0.0
