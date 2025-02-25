@@ -214,6 +214,7 @@ export class MapLibreAugmentedDiffViewer {
       }
 
       if (features.length == 0) {
+        this.options.onClick(null);
         return;
       }
 
