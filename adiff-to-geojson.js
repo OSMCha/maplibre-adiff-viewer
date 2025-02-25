@@ -59,9 +59,6 @@ function elementToGeoJSON(element) {
 
         let bounds = bbox({ type: "FeatureCollection", features });
         geometry = bboxPolygon(bounds).geometry;
-        console.log(element.id, members, features);
-        // console.log(element.members);
-        // console.log(features);
         properties.relations = features;
       }
       break;

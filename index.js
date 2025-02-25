@@ -207,8 +207,6 @@ export class MapLibreAugmentedDiffViewer {
       ];
       let features = map.queryRenderedFeatures(bbox) ?? [];
 
-      console.log(features);
-
       let id = selected;
       // for (let id of selected) {
       if (id !== null) {
@@ -228,7 +226,6 @@ export class MapLibreAugmentedDiffViewer {
       // (allows easier selection of overlapping objects)
       let selectedIndex = features.findIndex(f => f.id === selected);
       let nextIndex = mod(selectedIndex + 1, features.length);
-      // console.log(selectedIndex, nextIndex);
       let selectedFeature = features[nextIndex];
       selected = selectedFeature.id;
 
