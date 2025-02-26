@@ -44,22 +44,18 @@ function elementToGeoJSON(element) {
         let features = members
           .map(({ ref, role, ...member }) => elementToGeoJSON({ id: ref, ...member }))
           .map(f => { f.properties.action = "unchanged"; f.properties.side = "new"; return f; });
-          // FIXME: bug-compatibility with real-changesets-parser
-          // .filter((f) => f.geometry.coordinates.length > 0);
 
-        // FIXME: bug-compatibility with real-changesets-parser
-        // features = features.filter((f) => f.properties.type !== "relation");
-
-        // FIXME: bug-compatibility with real-changesets-parser
-        // for (let feature of features) {
-        //   if (feature.properties.type === "node") {
-        //     feature.properties.nodes = [];
-        //   }
-        // }
-
-        let bounds = bbox({ type: "FeatureCollection", features });
-        geometry = bboxPolygon(bounds).geometry;
         properties.relations = features;
+
+        // NOTE: members might not all have geometries, because child relations' members aren't
+        // included in adiffs from adiffs.osmcha.org right now. bbox() will return an infinite
+        // bounding box if these geometry-less members are included, so filter them out first.
+        let bounds = bbox({ type: "FeatureCollection", features: features.filter((f) => f.geometry) });
+        // Make sure the resulting bbox is finite before attaching it as a geometry for this
+        // relation (it can be infinite if there were no features left after filtering above)
+        if (bounds.every(v => Number.isFinite(v))) {
+          geometry = bboxPolygon(bounds).geometry;
+        }
       }
       break;
   }
