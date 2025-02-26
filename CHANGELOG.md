@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 Versioning of this project adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) spec.
 
+## [1.1.1]
+
+Released 2025-02-26
+
+- Fixed a bug where relations whose members included other relations would have infinite bounding boxes
+  (i.e. `[Infinity, Infinity, -Infinity, -Infinity]`)
+
 ## [1.1.0]
 
 Released 2025-02-25
@@ -30,6 +37,7 @@ Released 2025-02-03
 
 Initial release.
 
+[1.1.1]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.1.1
 [1.1.0]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.1.0
 [1.0.2]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.0.2
 [1.0.1]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.0.1
