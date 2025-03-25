@@ -70,7 +70,7 @@ export class MapLibreAugmentedDiffViewer {
     const CASE_COLOR = [
       "case",
       ["boolean", ["feature-state", "highlight"], false],
-      "hsla(0, 0%, 85%, 0.5)",
+      "hsla(0, 0%, 65%, 0.5)",
       "hsla(0, 0%, 15%, 0.5)"
     ];
     const CASE_BLUR = 2;
@@ -152,10 +152,14 @@ export class MapLibreAugmentedDiffViewer {
         "visibility": this.options.showElements.includes("node") ? "visible" : "none",
       },
       paint: {
-        "circle-radius": 4,
+        "circle-radius": ["case", [">", ["get", "num_tags"], 0], 8, 6],
         "circle-color": CASE_COLOR,
-        "circle-opacity": CASE_OPACITY,
-        "circle-blur": CASE_BLUR,
+        "circle-opacity": [
+          "case",
+          ["boolean", ["feature-state", "highlight"], false],
+          1.0,
+          0.0,
+        ],
       }
     });
   
@@ -210,7 +214,7 @@ export class MapLibreAugmentedDiffViewer {
         "visibility": this.options.showElements.includes("way") ? "visible" : "none",
       },
       paint: {
-        "line-width": 1.5,
+        "line-width": 1.0,
         "line-color": CORE_COLOR,
       }
     });
