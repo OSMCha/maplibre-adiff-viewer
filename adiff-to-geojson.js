@@ -43,7 +43,7 @@ function elementToGeoJSON(element) {
 
         let features = members
           .map(({ ref, role, ...member }) => elementToGeoJSON({ id: ref, ...member }))
-          .map(f => { f.properties.action = "unchanged"; f.properties.side = "new"; return f; });
+          .map(f => { f.properties.action = "unchanged"; f.properties.side = undefined; return f; });
 
         properties.relations = features;
 

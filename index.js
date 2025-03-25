@@ -194,16 +194,16 @@ export class MapLibreAugmentedDiffViewer {
       }
     });
     
-    // layers.push({
-    //   id: "changeset-way-context",
-    //   type: "line",
-    //   source: "changeset",
-    //   // filter: ['all', ['==', 'type', 'way'], ["!", ["has", "side"]]],
-    //   paint: {
-    //     "line-width": 1.5,
-    //     "line-color": "#8B79C4",
-    //   }
-    // });
+    layers.push({
+      id: "changeset-way-unchanged",
+      type: "line",
+      source: "changeset",
+      filter: ['all', ['==', 'type', 'way'], ["==", "action", "unchanged"]],
+      paint: {
+        "line-width": 1.0,
+        "line-color": "#8B79C4",
+      }
+    });
   
     layers.push({
       id: "changeset-way-new",
@@ -218,7 +218,18 @@ export class MapLibreAugmentedDiffViewer {
         "line-color": CORE_COLOR,
       }
     });
-  
+
+    layers.push({
+      id: "changeset-node-unchanged",
+      type: "circle",
+      source: "changeset",
+      filter: ['all', ['==', 'type', 'node'], ["==", "action", "unchanged"]],
+      paint: {
+        "circle-radius": ["case", [">", ["get", "num_tags"], 0], 4, 2],
+        "circle-color": "#8B79C4",
+      }
+    });
+
     layers.push({
       id: "changeset-node",
       type: "circle",
@@ -276,11 +287,15 @@ export class MapLibreAugmentedDiffViewer {
 
       map.setFeatureState({ source: 'changeset', id: selected }, { highlight: true });
 
-      this.options.onClick(event, this.adiff.actions.find(action => {
+      let action = this.adiff.actions.find(action => {
         let element = action.new ?? action.old;
         return element.type === selectedFeature.properties.type &&
           element.id === selectedFeature.properties.id;
-        }));
+        });
+
+      if (action) {
+        this.options.onClick(event, action);
+      }
     });
   }
 
