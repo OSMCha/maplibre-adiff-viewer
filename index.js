@@ -232,20 +232,9 @@ export class MapLibreAugmentedDiffViewer {
     return layers;
   }
 
-  updateStyle(map) {
-    let currentStyle = map.getStyle();
-
-    currentStyle.sources = { ...currentStyle.sources, ...this.sources() };
-    currentStyle.layers = [
-      ...currentStyle.layers.filter(layer => !layer.id.startsWith("changeset-")),
-      ...this.layers(),
-    ]
-
-    map.setStyle(currentStyle);
-  }
-
   addTo(map) {
-    this.updateStyle(map);
+    this.map = map;
+    this.refresh();
     
     let selected = null; // currently selected element (one at a time)
 
@@ -289,6 +278,20 @@ export class MapLibreAugmentedDiffViewer {
           element.id === selectedFeature.properties.id;
         }));
     });
+  }
+
+  refresh() {
+    if (!this.map) return;
+
+    let currentStyle = this.map.getStyle();
+
+    currentStyle.sources = { ...currentStyle.sources, ...this.sources() };
+    currentStyle.layers = [
+      ...currentStyle.layers.filter(layer => !layer.id.startsWith("changeset-")),
+      ...this.layers(),
+    ]
+
+    this.map.setStyle(currentStyle);
   }
 }
 
