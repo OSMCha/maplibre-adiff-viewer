@@ -3,10 +3,33 @@ import bbox from "@turf/bbox";
 import adiffToGeoJSON from "./adiff-to-geojson.js";
 
 export class MapLibreAugmentedDiffViewer {
+  static defaults = {
+    showElements: ["node", "way", "relation"],
+    showActions: ["create", "modify", "delete"],
+    onClick: null,
+  }
+
+  /// Create a MapLibreAugmentedDiffViewer which can be added to a MapLibre
+  /// map instance in order to render an augmented diff.
+  ///
+  /// `adiff` is a plain JavaScript object representing the augmented diff.
+  /// Generally you'll get one of these by using the `@osmcha/osm-adiff-parser`
+  /// package to parse an XML augmented diff file.
+  ///
+  /// `options` is an object with any of the following properties:
+  ///  - `showElements`: an array of OSM element types to show. The default
+  ///    is ["node", "way", "relation"] which shows all element types. May
+  ///    be empty, in which case nothing will be rendered.
+  ///  - `showActions`: an array of action types to show. The default is
+  ///    ["create", "modify", "delete"] which shows all action types. May
+  ///    be empty, in which case nothing will be rendered.
+  ///  - `onClick`: a function to call when one of the rendered map elements is
+  ///    clicked. The function receives the corresponding action from the diff
+  ///    as its argument.
   constructor(adiff, options) {
     this.adiff = adiff;
     this.geojson = adiffToGeoJSON(adiff);
-    this.options = {...options};
+    this.options = {...MapLibreAugmentedDiffViewer.defaults, ...options};
   }
 
   /// Returns the changeset bounding box in [west, south, east, north] form.
@@ -69,7 +92,12 @@ export class MapLibreAugmentedDiffViewer {
           "delete", "#CC2C47",
           "#8B79C488",
       ];
-      
+
+    // Filter expression for action types (create, modify, delete). Note that
+    // this filter expression works even in the case where showActions is empty
+    // (in other words, MapLibre evaluates ["in", "variable"] to false).
+    const ACTION_TYPE_FILTER = ["in", "action", ...this.options.showActions];
+
     layers.push({
       id: "changeset-overlay-bg",
       type: "background",
@@ -82,8 +110,12 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-relation-bg",
       type: "line",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'relation']],
-      layout: { "line-cap": "round", "line-join": "round" },
+      filter: ['all', ['==', 'type', 'relation'], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("relation") ? "visible" : "none",
+        "line-cap": "round",
+        "line-join": "round",
+      },
       paint: {
         "line-width": 8,
         "line-color": CASE_COLOR,
@@ -97,8 +129,12 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-way-bg",
       type: "line",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'way']],
-      layout: { "line-cap": "round", "line-join": "round" },
+      filter: ['all', ['==', 'type', 'way'], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("way") ? "visible" : "none",
+        "line-cap": "round",
+        "line-join": "round",
+      },
       paint: {
         "line-width": 8,
         "line-color": CASE_COLOR,
@@ -111,7 +147,10 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-node-bg",
       type: "circle",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'node']],
+      filter: ['all', ['==', 'type', 'node'], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("node") ? "visible" : "none",
+      },
       paint: {
         "circle-radius": 4,
         "circle-color": CASE_COLOR,
@@ -124,7 +163,10 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-relation",
       type: "line",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'relation']],
+      filter: ['all', ['==', 'type', 'relation'], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("relation") ? "visible" : "none",
+      },
       paint: {
         "line-width": 1.0,
         "line-color": CORE_COLOR,
@@ -137,7 +179,10 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-way-old",
       type: "line",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'way'], ["==", "side", "old"]],
+      filter: ['all', ['==', 'type', 'way'], ["==", "side", "old"], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("way") ? "visible" : "none",
+      },
       paint: {
         "line-width": 1.0,
         "line-color": CORE_COLOR,
@@ -160,7 +205,10 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-way-new",
       type: "line",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'way'], ["==", "side", "new"]],
+      filter: ['all', ['==', 'type', 'way'], ["==", "side", "new"], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("way") ? "visible" : "none",
+      },
       paint: {
         "line-width": 1.5,
         "line-color": CORE_COLOR,
@@ -171,7 +219,10 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-node",
       type: "circle",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'node']],
+      filter: ['all', ['==', 'type', 'node'], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("node") ? "visible" : "none",
+      },
       paint: {
         "circle-radius": ["case", [">", ["get", "num_tags"], 0], 4, 2],
         "circle-color": CORE_COLOR,
