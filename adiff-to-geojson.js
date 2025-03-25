@@ -3,6 +3,12 @@ import bboxPolygon from "@turf/bbox-polygon";
 import { isArea } from "id-area-keys";
 import deepEqual from "deep-equal";
 
+const EPSILON = 0.00005; // in degrees (about 5m at the equator)
+
+function deg2rad(degrees) {
+    return degrees * (Math.PI / 180);
+}
+
 function coordsAreEqual(a, b) {
   return a[0] === b[0] && a[1] === b[1];
 }
@@ -54,6 +60,19 @@ function elementToGeoJSON(element) {
         // Make sure the resulting bbox is finite before attaching it as a geometry for this
         // relation (it can be infinite if there were no features left after filtering above)
         if (bounds.every(v => Number.isFinite(v))) {
+          // Check if the bbox is degenerate (has zero area). This happens when creating a bbox
+          // of a single point. To make sure these bboxes can be rendered on the map, we'll
+          // bump their dimensions by a small amount, making their size nonzero.
+          if (bounds[0] === bounds[2] || bounds[1] === bounds[3]) {
+            let phi = deg2rad(bounds[1]); // latitude in radians
+            let cosphi = Math.cos(phi); // Mercator y-scale factor
+            // Scaling the y-axis epsilon by cosphi above ensures the resulting box is square
+            bounds[0] -= EPSILON;
+            bounds[1] -= EPSILON * cosphi;
+            bounds[2] += EPSILON;
+            bounds[3] += EPSILON * cosphi;
+          }
+
           geometry = bboxPolygon(bounds).geometry;
         }
       }
