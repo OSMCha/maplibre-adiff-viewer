@@ -38,7 +38,7 @@ export class MapLibreAugmentedDiffViewer {
   bounds() {
     return bbox({
      type: "FeatureCollection",
-     features: this.geojson.features.filter(f => f.properties.action !== "unchanged")
+     features: this.geojson.features.filter(f => f.properties.action !== "noop")
     });
   }
 
