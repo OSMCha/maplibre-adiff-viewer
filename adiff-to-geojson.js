@@ -49,7 +49,7 @@ function elementToGeoJSON(element) {
 
         let features = members
           .map(({ ref, role, ...member }) => elementToGeoJSON({ id: ref, ...member }))
-          .map(f => { f.properties.action = "unchanged"; f.properties.side = undefined; return f; });
+          .map(f => { f.properties.action = "noop"; f.properties.side = undefined; return f; });
 
         properties.relations = features;
 
@@ -115,8 +115,8 @@ function adiffToGeoJSON({ actions }) {
       oldFeature.properties.action = action.type;
 
       if (action.new.type == "relation" && action.new.version === action.old.version) {
-        oldFeature.properties.action = "unchanged";
-        newFeature.properties.action = "unchanged";
+        oldFeature.properties.action = "noop";
+        newFeature.properties.action = "noop";
       };
       
       oldFeature.properties.side = "old";

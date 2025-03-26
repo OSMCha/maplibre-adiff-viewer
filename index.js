@@ -5,7 +5,7 @@ import adiffToGeoJSON from "./adiff-to-geojson.js";
 export class MapLibreAugmentedDiffViewer {
   static defaults = {
     showElements: ["node", "way", "relation"],
-    showActions: ["create", "modify", "delete"],
+    showActions: ["create", "modify", "delete", "noop"],
     onClick: null,
   }
 
@@ -69,8 +69,12 @@ export class MapLibreAugmentedDiffViewer {
     const CASE_OPACITY = 1; //["interpolate", ["linear"], ["zoom"], 12, 0.5, 18, 0.2];
     const CASE_COLOR = [
       "case",
-      ["boolean", ["feature-state", "highlight"], false],
-      "hsla(0, 0%, 65%, 0.5)",
+      [
+        "any",
+        ["boolean", ["feature-state", "selected"], false],
+        ["boolean", ["feature-state", "highlighted"], false],
+      ],
+      "hsla(0, 0%, 45%, 0.5)",
       "hsla(0, 0%, 15%, 0.5)"
     ];
     const CASE_BLUR = 2;
@@ -84,13 +88,12 @@ export class MapLibreAugmentedDiffViewer {
           "create", "#39DBC0",
           "modify", [
             "match", ["get", "side"],
-            // "old", ["case", ["get", "tags_changed"], "#DB950A", "#AAAAAA"],
             "old", "#888888",
             "new", ["case", ["get", "tags_changed"], "#E8E845", "#B7B7B7"],
             "#FF0000" // unreachable
           ],
           "delete", "#CC2C47",
-          "#8B79C488",
+          "#8B79C4",
       ];
 
     // Filter expression for action types (create, modify, delete). Note that
@@ -156,7 +159,11 @@ export class MapLibreAugmentedDiffViewer {
         "circle-color": CASE_COLOR,
         "circle-opacity": [
           "case",
-          ["boolean", ["feature-state", "highlight"], false],
+          [
+            "any",
+            ["boolean", ["feature-state", "selected"], false],
+            ["boolean", ["feature-state", "highlighted"], false],
+          ],
           1.0,
           0.0,
         ],
@@ -198,7 +205,10 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-way-unchanged",
       type: "line",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'way'], ["==", "action", "unchanged"]],
+      filter: ['all', ['==', 'type', 'way'], ["==", "action", "noop"], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("way") ? "visible" : "none",
+      },
       paint: {
         "line-width": 1.0,
         "line-color": "#8B79C4",
@@ -223,7 +233,10 @@ export class MapLibreAugmentedDiffViewer {
       id: "changeset-node-unchanged",
       type: "circle",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'node'], ["==", "action", "unchanged"]],
+      filter: ['all', ['==', 'type', 'node'], ["==", "action", "noop"], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("node") ? "visible" : "none",
+      },
       paint: {
         "circle-radius": ["case", [">", ["get", "num_tags"], 0], 4, 2],
         "circle-color": "#8B79C4",
@@ -251,7 +264,11 @@ export class MapLibreAugmentedDiffViewer {
     this.map = map;
     this.refresh();
     
-    let selected = null; // currently selected element (one at a time)
+    // currently selected element (one at a time)
+    // NOTE: this is only used internally for rotating between overlapping
+    // features on successive clicks; if you want the feature to appear visually
+    // selected you still need to call adiffViewer.select(type, id)
+    let selected = null;
 
     map.on("click", (event) => {
       if (!this.options.onClick) { return; }
@@ -262,30 +279,31 @@ export class MapLibreAugmentedDiffViewer {
       ];
       let features = map.queryRenderedFeatures(bbox) ?? [];
 
-      let id = selected;
-      // for (let id of selected) {
-      if (id !== null) {
-        map.setFeatureState({ source: 'changeset', id }, { highlight: false });
-      }
-
       if (features.length == 0) {
+        selected = null;
         this.options.onClick(null);
         return;
       }
 
-      // TODO: deduplicate features and sort them by id
-      // let features = [...new Set(features.map(f => f.id))].sort((a, b) => a < b)
+      // deduplicate features and sort them by id; this is important
+      // to make sure that rotating through overlapping features on
+      // successive clicks behaves consistently.
+      let seen = new Set();
+      let deduplicated = [];
+      for (let f of features) {
+        if (!seen.has(f.id)) {
+          seen.add(f.id);
+          deduplicated.push(f);
+        }
+      }
+      let sorted = deduplicated.sort((a, b) => a < b);
   
-      // selected = new Set(features.map((feature) => feature.id));
-
       // rotate through features under cursor with each click
       // (allows easier selection of overlapping objects)
-      let selectedIndex = features.findIndex(f => f.id === selected);
-      let nextIndex = mod(selectedIndex + 1, features.length);
-      let selectedFeature = features[nextIndex];
+      let selectedIndex = sorted.findIndex(f => f.id === selected);
+      let nextIndex = mod(selectedIndex + 1, sorted.length);
+      let selectedFeature = sorted[nextIndex];
       selected = selectedFeature.id;
-
-      map.setFeatureState({ source: 'changeset', id: selected }, { highlight: true });
 
       let action = this.adiff.actions.find(action => {
         let element = action.new ?? action.old;
@@ -299,6 +317,9 @@ export class MapLibreAugmentedDiffViewer {
     });
   }
 
+  /// Rebuild the styles applied to the map by the adiff viewer. You should call
+  /// this function after changing the viewer's `options`, or after modifying
+  /// the basemap that the viewer is displayed on top of.
   refresh() {
     if (!this.map) return;
 
@@ -311,6 +332,51 @@ export class MapLibreAugmentedDiffViewer {
     ]
 
     this.map.setStyle(currentStyle);
+  }
+
+  /// Select the given OSM element (visually highlighting it on the map)
+  /// This function is intended to be used when a feature is clicked.
+  select(type, id) {
+    this.deselect();
+
+    for (let fid of this._getFeatureIdsForElement(type, id)) {
+      this.map.setFeatureState({ source: "changeset", id: fid }, { selected: true });
+    }
+  }
+
+  /// Clear any selected OSM elements (removing visual highlight)
+  deselect() {
+    for (let fid of this.geojson.features.map(f => f.id)) {
+      this.map.setFeatureState({ source: "changeset", id: fid }, { selected: false });
+    }
+  }
+
+  /// Highlight the given OSM element. Highlighting differs from selecting in
+  /// two ways:
+  ///   1. There can be multiple highlighted features at once
+  ///   2. Highlights must be removed from each feature by ID (there's no
+  //       "clear all" function)
+  /// Highlighting is intended for hover effects (as opposed to selecting,
+  /// which is meant to be used on click).
+  highlight(type, id) {
+    this._setHighlight(type, id, true);
+  }
+
+  /// Remove highlight effect from the given OSM element
+  unhighlight(type, id) {
+    this._setHighlight(type, id, false);
+  }
+
+  _setHighlight(type, id, highlighted) {
+    for (let fid of this._getFeatureIdsForElement(type, id)) {
+      this.map.setFeatureState({ source: "changeset", id: fid }, { highlighted });
+    }
+  }
+
+  _getFeatureIdsForElement(type, id) {
+    return this.geojson.features
+      .filter(f => f.properties.type === type && f.properties.id === id)
+      .map(f => f.id);
   }
 }
 
