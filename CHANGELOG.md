@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 Versioning of this project adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) spec.
 
+## [1.2.0]
+
+Released 2025-03-25
+
+## Added
+- Added `showElements` and `showActions` options to allow hiding features by their OSM element type or the type of action affecting them in the diff
+- Added `refresh()` method to allow changing basemap or options after the plugin is initialized (consumers should manually call `refresh()` after modifying plugin options or the basemap style).
+- Added rendering of unchanged members of modified relations (in purple)
+- Added public methods to select/deselect and highlight/unhighlight features. Selecting is intended to be an on-click behavior, while highlighting is intended for hover effects.
+
+## Fixed
+- Fixed rendering of degenerate bounding boxes (bounding boxes whose width or height was zero, which can happen when creating a bounding box of a single node). Such bounding boxes will now be grown slightly (to about 10m x 10m) so that they can be rendered.
+
+## Migration notes
+- Previously, clicking on a map element would automatically highlight it. To provide more control, this behavior has been removed. If you wish to highlight elements on click, you can explicitly call `select(type, id)` in the `onClick` handler.
+
 ## [1.1.1]
 
 Released 2025-02-26
@@ -37,6 +53,7 @@ Released 2025-02-03
 
 Initial release.
 
+[1.2.0]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.2.0
 [1.1.1]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.1.1
 [1.1.0]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.1.0
 [1.0.2]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.0.2
