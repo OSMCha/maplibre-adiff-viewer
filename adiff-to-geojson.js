@@ -103,27 +103,26 @@ function adiffToGeoJSON({ actions }) {
 
     let id = action.new.type + "/" + action.new.id;
     
-    if (action.type == "create" || action.type == "modify") {
+    if (action.type === "create" || action.type === "modify") {
       newFeature = elementToGeoJSON(action.new);
       newFeature.properties.action = action.type;
       newFeature.properties.side = "new";
       newFeature.properties.num_tags = Object.keys(newFeature.properties.tags).length;
     }
 
-    if (action.type == "modify" || action.type == "delete") {
+    if (action.type === "modify" || action.type === "delete") {
       oldFeature = elementToGeoJSON(action.old);
       oldFeature.properties.action = action.type;
-
-      if (action.new.type == "relation" && action.new.version === action.old.version) {
-        oldFeature.properties.action = "noop";
-        newFeature.properties.action = "noop";
-      };
-      
       oldFeature.properties.side = "old";
       oldFeature.properties.num_tags = Object.keys(oldFeature.properties.tags).length;
     }
 
-    if (action.type == "modify") {
+    if (action.type === "modify") {
+      if (action.new.type === "relation" && action.new.version === action.old.version) {
+        oldFeature.properties.action = "noop";
+        newFeature.properties.action = "noop";
+      };
+
       let tags_changed = !deepEqual(action.old.tags, action.new.tags, { strict: true });
       oldFeature.properties.tags_changed = tags_changed;
       newFeature.properties.tags_changed = tags_changed;
