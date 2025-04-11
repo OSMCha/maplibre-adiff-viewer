@@ -84,17 +84,17 @@ export class MapLibreAugmentedDiffViewer {
     // with the 'highlight' feature state). that way highlighted stuff would be on top
     // of everything else.
     const CORE_COLOR = [
-          "match", ["get", "action"],
-          "create", "#39DBC0",
-          "modify", [
-            "match", ["get", "side"],
-            "old", "#888888",
-            "new", ["case", ["get", "tags_changed"], "#E8E845", "#B7B7B7"],
-            "#FF0000" // unreachable
-          ],
-          "delete", "#CC2C47",
-          "#8B79C4",
-      ];
+      "match", ["get", "action"],
+      "create", "#32E5C7",
+      "modify", [
+        "match", ["get", "side"],
+        "old", "#888888",
+        "new", ["case", ["get", "tags_changed"], "#E8E845", "#D0D0D0"],
+        "#FF0000" // unreachable
+      ],
+      "delete", "#F23456",
+      "#8B79C4",
+    ];
 
     // Filter expression for action types (create, modify, delete). Note that
     // this filter expression works even in the case where showActions is empty
