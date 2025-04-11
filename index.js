@@ -147,26 +147,31 @@ export class MapLibreAugmentedDiffViewer {
     });
   
     layers.push({
-      id: "changeset-node-bg",
+      id: "changeset-node-untagged-bg",
       type: "circle",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'node'], ACTION_TYPE_FILTER],
+      filter: ['all', ['==', 'type', 'node'], ["==", "num_tags", 0], ACTION_TYPE_FILTER],
+      minzoom: 15,
       layout: {
         "visibility": this.options.showElements.includes("node") ? "visible" : "none",
       },
       paint: {
-        "circle-radius": ["case", [">", ["get", "num_tags"], 0], 8, 6],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 16, 2.5, 20, 6.0],
         "circle-color": CASE_COLOR,
-        "circle-opacity": [
-          "case",
-          [
-            "any",
-            ["boolean", ["feature-state", "selected"], false],
-            ["boolean", ["feature-state", "highlighted"], false],
-          ],
-          1.0,
-          0.0,
-        ],
+      }
+    });
+
+    layers.push({
+      id: "changeset-node-tagged-bg",
+      type: "circle",
+      source: "changeset",
+      filter: ['all', ['==', 'type', 'node'], [">", "num_tags", 0], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("node") ? "visible" : "none",
+      },
+      paint: {
+        "circle-radius": 8,
+        "circle-color": CASE_COLOR,
       }
     });
   
@@ -244,15 +249,30 @@ export class MapLibreAugmentedDiffViewer {
     });
 
     layers.push({
-      id: "changeset-node",
+      id: "changeset-node-untagged",
       type: "circle",
       source: "changeset",
-      filter: ['all', ['==', 'type', 'node'], ACTION_TYPE_FILTER],
+      filter: ['all', ['==', 'type', 'node'], ["==", "num_tags", 0], ACTION_TYPE_FILTER],
+      minzoom: 15,
       layout: {
         "visibility": this.options.showElements.includes("node") ? "visible" : "none",
       },
       paint: {
-        "circle-radius": ["case", [">", ["get", "num_tags"], 0], 4, 2],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 16, 1.25, 20, 3.0],
+        "circle-color": CORE_COLOR,
+      }
+    });
+
+    layers.push({
+      id: "changeset-node-tagged",
+      type: "circle",
+      source: "changeset",
+      filter: ['all', ['==', 'type', 'node'], [">", "num_tags", 0], ACTION_TYPE_FILTER],
+      layout: {
+        "visibility": this.options.showElements.includes("node") ? "visible" : "none",
+      },
+      paint: {
+        "circle-radius": 4,
         "circle-color": CORE_COLOR,
       }
     });
