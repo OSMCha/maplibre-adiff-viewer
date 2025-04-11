@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 Versioning of this project adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) spec.
 
+## [1.3.0]
+
+Released 2025-04-10
+
+- Make colors a bit brighter and more vibrant to improve visual contrast with the background
+- Only show untagged nodes at zooms >= 15 (to reduce visual noise)
+- Make ways easier to see when selected/highlighted, by increasing their line width slightly
+
 ## [1.2.1]
 
 Released 2025-03-25
@@ -59,6 +67,7 @@ Released 2025-02-03
 
 Initial release.
 
+[1.3.0]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.3.0
 [1.2.1]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.2.1
 [1.2.0]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.2.0
 [1.1.1]: https://github.com/OSMCha/maplibre-adiff-viewer/releases/tag/v1.1.1
