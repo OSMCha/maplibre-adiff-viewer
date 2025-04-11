@@ -96,6 +96,17 @@ export class MapLibreAugmentedDiffViewer {
       "#8B79C4",
     ];
 
+    const LINE_WIDTH = [
+      "case",
+      [
+        "any",
+        ["boolean", ["feature-state", "selected"], false],
+        ["boolean", ["feature-state", "highlighted"], false],
+      ],
+      2.0,
+      1.0,
+    ];
+
     // Filter expression for action types (create, modify, delete). Note that
     // this filter expression works even in the case where showActions is empty
     // (in other words, MapLibre evaluates ["in", "variable"] to false).
@@ -200,9 +211,12 @@ export class MapLibreAugmentedDiffViewer {
         "visibility": this.options.showElements.includes("way") ? "visible" : "none",
       },
       paint: {
-        "line-width": 1.0,
         "line-color": CORE_COLOR,
         "line-dasharray": [5, 3],
+        // use a fixed line width for old ways (instead of using LINE_WIDTH to
+        // widen them when selected) because varying the line width also has the
+        // undesired side effect of changing the dash distance
+        "line-width": 1.0,
       }
     });
     
@@ -215,7 +229,7 @@ export class MapLibreAugmentedDiffViewer {
         "visibility": this.options.showElements.includes("way") ? "visible" : "none",
       },
       paint: {
-        "line-width": 1.0,
+        "line-width": LINE_WIDTH,
         "line-color": "#8B79C4",
       }
     });
@@ -229,7 +243,7 @@ export class MapLibreAugmentedDiffViewer {
         "visibility": this.options.showElements.includes("way") ? "visible" : "none",
       },
       paint: {
-        "line-width": 1.0,
+        "line-width": LINE_WIDTH,
         "line-color": CORE_COLOR,
       }
     });
