@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Versioning of this project adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) spec.
 
+## [1.3.1]
+
+Released 2025-08-12
+
+- Fixed a bug where `bounds()` would return an infinite bounding box if the diff contained only geometry changes.
+
 ## [1.3.0]
 
 Released 2025-04-10
