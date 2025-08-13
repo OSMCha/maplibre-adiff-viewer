@@ -1,4 +1,6 @@
 import bbox from "@turf/bbox";
+import area from "@turf/area";
+import bboxPolygon from "@turf/bbox-polygon";
 
 import adiffToGeoJSON from "./adiff-to-geojson.js";
 
@@ -33,15 +35,41 @@ export class MapLibreAugmentedDiffViewer {
   }
 
   /// Returns the changeset bounding box in [west, south, east, north] form.
+  ///
   /// The bounding box covers only the elements that were changed, not elements
-  /// that were only included in the diff for context.
+  /// that were only included in the diff for context. It may also exclude ways
+  /// with geometry-only changes (i.e. no tag changes), if those ways would make
+  /// the bounding box much larger than it would otherwise be.
   bounds() {
-    return bbox({
-     type: "FeatureCollection",
-     features: this.geojson.features.filter(
-       f => f.properties.type === "way" ? f.properties.tags_changed : f.properties.action !== "noop"
-     )
-    });
+    // get features that were modified (i.e. exclude context elements)
+    let changed = this.geojson.features.filter(f => f.properties.action !== "noop");
+
+    // exclude ways with geometry-only changes, since they can sometimes cause the
+    // bbox to be much larger than the 'effective' area touched by the changeset
+    let tagsChanged = changed.filter(
+      f => (f.properties.action === "modify" && f.properties.type === "way") ? f.properties.tags_changed : true
+    );
+
+    // if no features had tag changes, fall back to all features
+    if (tagsChanged.length === 0) {
+      return bbox({ type: "FeatureCollection", features: changed });
+    }
+
+    // compute bounding boxes for both sets of features
+    let allChangesBBox = bbox({ type: "FeatureCollection", features: changed });
+    let tagsChangedBBox = bbox({ type: "FeatureCollection", features: tagsChanged });
+
+    // compute areas of both bounding boxes
+    let allChangesArea = area(bboxPolygon(allChangesBBox));
+    let tagsChangedArea = area(bboxPolygon(tagsChangedBBox));
+
+    // return the bbox of all changes, unless it is >10x larger than the bbox that
+    // excludes ways with no tag changes; in that case return the smaller bbox
+    if (tagsChangedArea < 0.1 * allChangesArea) {
+      return tagsChangedBBox;
+    } else {
+      return allChangesBBox;
+    }
   }
 
   /// Return the sources that should be added to the map style in order to support
@@ -87,14 +115,14 @@ export class MapLibreAugmentedDiffViewer {
     // of everything else.
     const CORE_COLOR = [
       "match", ["get", "action"],
-      "create", "#32E5C7",
+      "create", "#4ECDC4",
       "modify", [
         "match", ["get", "side"],
         "old", "#888888",
-        "new", ["case", ["get", "tags_changed"], "#E8E845", "#D0D0D0"],
+        "new", ["case", ["get", "tags_changed"], "#FFE66D", "#EFEFEF"],
         "#FF0000" // unreachable
       ],
-      "delete", "#F23456",
+      "delete", "#FF6B6B",
       "#8B79C4",
     ];
 

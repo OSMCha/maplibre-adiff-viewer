@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/OSMCha/maplibre-adiff-viewer#readme",
   "dependencies": {
+    "@turf/area": "^7.2.0",
     "@turf/bbox": "^7.2.0",
     "@turf/bbox-polygon": "^7.2.0",
     "deep-equal": "^2.2.3",
